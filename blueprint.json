@@ -1,0 +1,24 @@
+{
+	"landingPage": "/wp-admin/post.php?post=1&action=edit",
+	"steps": [
+	  {
+		"step": "login",
+		"username": "admin",
+		"password": "password"
+	  },
+	  {
+		"step": "installPlugin",
+		"pluginData": {
+		  "resource": "url",
+		  "url": "https://github-proxy.com/proxy/?repo=tommusrhodus/snake-gutenberg-block&branch=main"
+		},
+		"options": {
+		  "activate": true
+		}
+	  },
+	  {
+		"step": "runPHP",
+		"code": "<?php require_once 'wordpress/wp-load.php'; wp_update_post( array( 'ID' => 1, 'post_content' => '<!-- wp:paragraph -->\n<p>Welcome to WordPress. This is your first post. Edit or delete it, then start writing!</p>\n<!-- /wp:paragraph -->\n<!-- wp:tommusrhodus/snake-game-block /-->\n<!-- wp:paragraph -->\n<p>In this post the Snake Game block has already been added for you to enjoy!</p>\n<!-- /wp:paragraph -->') );"
+	  }
+	]
+  }
