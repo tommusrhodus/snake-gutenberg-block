@@ -1,0 +1,53 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "tommusrhodus/snake-game-block",
+	"version": "0.1.0",
+	"title": "Snake Game",
+	"category": "widgets",
+	"icon": "smiley",
+	"description": "Creates a Snake Game instance in the Editor only.",
+	"example": {},
+	"supports": {
+		"html": false,
+		"multiple": false,
+		"typography": {
+			"lineHeight": true,
+			"fontSize": true
+		},
+		"color": {
+			"text": true,
+			"background": false
+		}
+	},
+	"attributes": {
+		"backgroundColor": {
+			"type": "string",
+			"default": "#99C17A"
+		},
+		"snakeColor": {
+			"type": "string",
+			"default": "#4A5D23"
+		},
+		"appleColor": {
+			"type": "string",
+			"default": "#4A5D23"
+		},
+		"startSnakeSize": {
+			"type": "number",
+			"default": 6
+		},
+		"refreshRate": {
+			"type": "number",
+			"default": 100
+		},
+		"highScore": {
+			"type": "number",
+			"default": 0
+		}
+	},
+	"textdomain": "snake-game-block",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"render": "file:./render.php"
+}
