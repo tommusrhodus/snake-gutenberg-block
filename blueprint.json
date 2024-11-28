@@ -18,7 +18,7 @@
 	  },
 	  {
 		"step": "runPHP",
-		"code": "<?php require_once 'wordpress/wp-load.php'; wp_update_post( array( 'ID' => 1, 'post_content' => '<!-- wp:paragraph -->\n<p>Welcome to WordPress. This is your first post. Edit or delete it, then start writing!</p>\n<!-- /wp:paragraph -->\n<!-- wp:tommusrhodus/snake-game-block /-->\n<!-- wp:paragraph -->\n<p>In this post the Snake Game block has already been added for you to enjoy!</p>\n<!-- /wp:paragraph -->') );"
+		"code": "<?php require_once 'wordpress/wp-load.php'; wp_update_post( array( 'ID' => 1, 'post_content' => '<!-- wp:paragraph -->\n<p>Welcome to WordPress. This is your first post. Edit or delete it, then start writing!</p>\n<!-- /wp:paragraph -->\n<!-- wp:tommusrhodus/snake-game-block /-->\n<!-- wp:paragraph -->\n<p>In this post the Snake Game block has already been added for you to enjoy! Use WASD to control the snake.</p>\n<!-- /wp:paragraph -->') );"
 	  }
 	]
   }
