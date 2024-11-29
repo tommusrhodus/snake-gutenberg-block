@@ -1,12 +1,8 @@
-import { __ } from '@wordpress/i18n';
-import {
-	InspectorControls,
-	useBlockProps,
-	useSettings,
-	ColorPaletteControl,
-} from '@wordpress/block-editor';
+import { useBlockProps, useSettings } from '@wordpress/block-editor';
 import { useState, useEffect } from '@wordpress/element';
-import { Button, PanelBody, RangeControl } from '@wordpress/components';
+import GameSettings from './components/GameSettings';
+import GameBoard from './components/GameBoard';
+import GameScore from './components/GameScore';
 import './editor.scss';
 
 export default function Edit( { attributes, setAttributes, isSelected } ) {
@@ -116,6 +112,11 @@ export default function Edit( { attributes, setAttributes, isSelected } ) {
 			startSnakeSize,
 			snake,
 			apple: { Xpos: appleXpos, Ypos: appleYpos },
+			direction: 'right',
+			directionChanged: false,
+			isGameOver: false,
+			gameLoopTimeout: refreshRate,
+			score: 0,
 		} ) );
 	};
 
@@ -180,12 +181,11 @@ export default function Edit( { attributes, setAttributes, isSelected } ) {
 			const height = game.height;
 			const blockWidth = game.blockWidth;
 			const blockHeight = game.blockHeight;
-			const newTail = { Xpos: apple.Xpos, Ypos: apple.Ypos };
 			let highScore = game.highScore;
 			let gameLoopTimeout = game.gameLoopTimeout;
 
 			// increase snake size
-			snake.push( newTail );
+			snake.push( { Xpos: apple.Xpos, Ypos: apple.Ypos } );
 
 			// create another apple
 			apple.Xpos =
@@ -197,6 +197,7 @@ export default function Edit( { attributes, setAttributes, isSelected } ) {
 					Math.random() *
 						( ( height - blockHeight ) / blockHeight + 1 )
 				) * blockHeight;
+
 			while ( isAppleOnSnake( apple.Xpos, apple.Ypos ) ) {
 				apple.Xpos =
 					Math.floor(
@@ -271,127 +272,41 @@ export default function Edit( { attributes, setAttributes, isSelected } ) {
 
 	// This function moves the head of the snake in the direction it is facing.
 	const moveHead = () => {
-		switch ( game.direction ) {
-			case 'left':
-				moveHeadLeft( game.width, game.blockWidth, game.snake );
-				break;
-			case 'up':
-				moveHeadUp( game.height, game.blockHeight, game.snake );
-				break;
-			case 'right':
-				moveHeadRight( game.width, game.blockWidth, game.snake );
-				break;
-			default:
-				moveHeadDown( game.height, game.blockHeight, game.snake );
-		}
-	};
-
-	// These functions move the head of the snake in the direction it is facing and wrap it around the board if it goes off the edge.
-	const moveHeadLeft = ( width, blockWidth, snake ) => {
-		snake[ 0 ].Xpos =
-			snake[ 0 ].Xpos <= 0
-				? width - blockWidth
-				: snake[ 0 ].Xpos - blockWidth;
-
-		setGame( ( prevGame ) => ( {
-			...prevGame,
-			snake,
-		} ) );
-	};
-
-	// These functions move the head of the snake in the direction it is facing and wrap it around the board if it goes off the edge.
-	const moveHeadUp = ( height, blockHeight, snake ) => {
-		snake[ 0 ].Ypos =
-			snake[ 0 ].Ypos <= 0
-				? height - blockHeight
-				: snake[ 0 ].Ypos - blockHeight;
-
-		setGame( ( prevGame ) => ( {
-			...prevGame,
-			snake,
-		} ) );
-	};
-
-	// These functions move the head of the snake in the direction it is facing and wrap it around the board if it goes off the edge.
-	const moveHeadRight = ( width, blockWidth, snake ) => {
-		snake[ 0 ].Xpos =
-			snake[ 0 ].Xpos >= width - blockWidth
-				? 0
-				: snake[ 0 ].Xpos + blockWidth;
-
-		setGame( ( prevGame ) => ( {
-			...prevGame,
-			snake,
-		} ) );
-	};
-
-	// These functions move the head of the snake in the direction it is facing and wrap it around the board if it goes off the edge.
-	const moveHeadDown = ( height, blockHeight, snake ) => {
-		snake[ 0 ].Ypos =
-			snake[ 0 ].Ypos >= height - blockHeight
-				? 0
-				: snake[ 0 ].Ypos + blockHeight;
-
-		setGame( ( prevGame ) => ( {
-			...prevGame,
-			snake,
-		} ) );
-	};
-
-	// This function resets the game to the initial state.
-	const resetGame = () => {
-		// Reset the keydown event listener for the game controls.
-		window.removeEventListener( 'keydown', handleKeyDown );
-		window.addEventListener( 'keydown', handleKeyDown );
-
+		const snake = game.snake;
 		const width = game.width;
 		const height = game.height;
 		const blockWidth = game.blockWidth;
 		const blockHeight = game.blockHeight;
-		const apple = game.apple;
 
-		// snake reset
-		const snake = [];
-		let Xpos = width / 2;
-		const Ypos = height / 2;
-		const snakeHead = { Xpos: width / 2, Ypos: height / 2 };
-		snake.push( snakeHead );
-		for ( let i = 1; i < game.startSnakeSize; i++ ) {
-			Xpos -= blockWidth;
-			const snakePart = { Xpos, Ypos };
-			snake.push( snakePart );
-		}
-
-		// apple position reset
-		apple.Xpos =
-			Math.floor(
-				Math.random() * ( ( width - blockWidth ) / blockWidth + 1 )
-			) * blockWidth;
-		apple.Ypos =
-			Math.floor(
-				Math.random() * ( ( height - blockHeight ) / blockHeight + 1 )
-			) * blockHeight;
-		while ( isAppleOnSnake( apple.Xpos, apple.Ypos ) ) {
-			apple.Xpos =
-				Math.floor(
-					Math.random() * ( ( width - blockWidth ) / blockWidth + 1 )
-				) * blockWidth;
-			apple.Ypos =
-				Math.floor(
-					Math.random() *
-						( ( height - blockHeight ) / blockHeight + 1 )
-				) * blockHeight;
+		switch ( game.direction ) {
+			case 'left':
+				snake[ 0 ].Xpos =
+					snake[ 0 ].Xpos <= 0
+						? width - blockWidth
+						: snake[ 0 ].Xpos - blockWidth;
+				break;
+			case 'up':
+				snake[ 0 ].Ypos =
+					snake[ 0 ].Ypos <= 0
+						? height - blockHeight
+						: snake[ 0 ].Ypos - blockHeight;
+				break;
+			case 'right':
+				snake[ 0 ].Xpos =
+					snake[ 0 ].Xpos >= width - blockWidth
+						? 0
+						: snake[ 0 ].Xpos + blockWidth;
+				break;
+			default:
+				snake[ 0 ].Ypos =
+					snake[ 0 ].Ypos >= height - blockHeight
+						? 0
+						: snake[ 0 ].Ypos + blockHeight;
 		}
 
 		setGame( ( prevGame ) => ( {
 			...prevGame,
 			snake,
-			apple,
-			direction: 'right',
-			directionChanged: false,
-			isGameOver: false,
-			gameLoopTimeout: refreshRate,
-			score: 0,
 		} ) );
 	};
 
@@ -438,113 +353,35 @@ export default function Edit( { attributes, setAttributes, isSelected } ) {
 		} );
 	};
 
-	// This is the game over screen.
-	const renderGameOver = () => {
-		return (
-			<div id="GameOver">
-				<div id="PressSpaceText">
-					<Button
-						variant="primary"
-						onClick={ resetGame }
-						text="Start Game"
-					/>
-				</div>
-			</div>
-		);
-	};
-
-	// This is the game screen.
-	const renderGame = () => {
-		return (
-			<>
-				{ game.snake.map( ( snakePart, index ) => {
-					return (
-						<div
-							key={ index }
-							className="snake"
-							style={ {
-								width: game.blockWidth,
-								height: game.blockHeight,
-								left: snakePart.Xpos,
-								top: snakePart.Ypos,
-							} }
-						/>
-					);
-				} ) }
-				<div
-					className="apple"
-					style={ {
-						width: game.blockWidth,
-						height: game.blockHeight,
-						left: game.apple.Xpos,
-						top: game.apple.Ypos,
-					} }
-				/>
-				{ ! isSelected && <div id="paused">Paused</div> }
-			</>
-		);
-	};
-
 	// Finally we return the block with the game board.
 	return (
 		<div { ...useBlockProps() }>
-			<InspectorControls>
-				<PanelBody
-					title={ __( 'Game Settings', 'text-domain' ) }
-					initialOpen={ true }
-				>
-					<ColorPaletteControl
-						value={ backgroundColor }
-						onChange={ ( color ) =>
-							setAttributes( { backgroundColor: color } )
-						}
-						label={ __( 'Background Color', 'text-domain' ) }
-					/>
-					<ColorPaletteControl
-						value={ snakeColor }
-						onChange={ ( color ) =>
-							setAttributes( { snakeColor: color } )
-						}
-						label={ __( 'Snake Color', 'text-domain' ) }
-					/>
-					<ColorPaletteControl
-						value={ appleColor }
-						onChange={ ( color ) =>
-							setAttributes( { appleColor: color } )
-						}
-						label={ __( 'Apple Color', 'text-domain' ) }
-					/>
-					<RangeControl
-						label={ __( 'Game Speed(ms)', 'text-domain' ) }
-						value={ refreshRate }
-						onChange={ ( newValue ) =>
-							setAttributes( { refreshRate: newValue } )
-						}
-						min={ 20 }
-						max={ 200 }
-						step={ 10 }
-					/>
-				</PanelBody>
-			</InspectorControls>
-
-			<div
-				id="GameBoard"
-				style={ {
-					'--game-width': game.width + 'px',
-					'--game-height': game.height + 'px',
-					'--snake-color': snakeColor,
-					'--apple-color': appleColor,
-					'--background-color': backgroundColor,
-				} }
-			>
-				{ game.isGameOver ? renderGameOver() : renderGame() }
-			</div>
-			{ isSelected && (
-				<div id="score">
-					<span>HIGH-SCORE: { game.highScore }</span>
-					<span>SCORE: { game.score }</span>
-				</div>
-			) }
+			<GameSettings
+				backgroundColor={ backgroundColor }
+				snakeColor={ snakeColor }
+				appleColor={ appleColor }
+				refreshRate={ refreshRate }
+				setAttributes={ setAttributes }
+			/>
+			<GameBoard
+				width={ game.width }
+				height={ game.height }
+				snakeColor={ snakeColor }
+				appleColor={ appleColor }
+				backgroundColor={ backgroundColor }
+				isGameOver={ game.isGameOver }
+				resetGame={ initGame }
+				snake={ game.snake }
+				blockWidth={ game.blockWidth }
+				blockHeight={ game.blockHeight }
+				apple={ game.apple }
+				isSelected={ isSelected }
+			/>
+			<GameScore
+				score={ game.score }
+				highScore={ game.highScore }
+				isSelected={ isSelected }
+			/>
 		</div>
 	);
 }
